@@ -1600,6 +1600,7 @@
       ch.on('postgres_changes', { event: '*', schema: 'public', table: t }, async () => {
         let s = saveTyping();
         await loadCafeInteractions();
+        render();
         restoreTyping(s);
       });
     });
@@ -1607,6 +1608,7 @@
       let s = saveTyping();
       await loadVisitedOnline();
       await loadCafeInteractions();
+      render();
       restoreTyping(s);
     });
     ch.subscribe();
