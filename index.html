@@ -1348,20 +1348,20 @@
     );
     render();
   }
-  async function deleteVisitedOnline(id, photo_path){
-  if(!confirm('Delete memory online ni?')){
-    return;
+    async function deleteVisitedOnline(id, photo_path){
+    if(!confirm('Delete memory online ni?')){
+      return;
+    }
+    if(photo_path){
+      await supabaseClient.storage.from('visit-photos').remove([photo_path]);
+    }
+    const { error } = await supabaseClient.from('visited_memories').delete().eq('id', id);
+    if(error){
+      alert('Gagal delete: ' + error.message);
+      return;
+    }
+    await loadVisitedOnline();
   }
-  if(photo_path){
-    await supabaseClient.storage.from('visit-photos').remove([photo_path]);
-  }
-  const { error } = await supabaseClient.from('visited_memories').delete().eq('id', id);
-  if(error){
-    alert('Gagal delete: ' + error.message);
-    return;
-  }
-  await loadVisitedOnline();
-}
   function render(){
     let q =
       document.getElementById('search').value.toLowerCase();
