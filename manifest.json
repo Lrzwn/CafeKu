@@ -1,26 +1,31 @@
 {
-  "background_color": "#ffffff",
-  "dir": "ltr",
-  "name": "CafeKu",
+  "name": "Cafe Finder Brunei",
   "short_name": "CafeKu",
-  "scope": "/CafeKu/",
-  "orientation": "any"
-  "start_url": "/CafeKu/",
+  "description": "Cari cafe di Brunei - BSB, Gadong, Tutong, Belait, Temburong",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#FFF7ED",
   "theme_color": "#451a03",
   "icons": [
     {
-       "src": "icon-620.png",
-      "sizes": "620x620",
+      "src": "icon-192.png",
+      "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
-  },
-  {
+    },
+    {
       "src": "icon-512.png",
-      "size": "512x512",
+      "sizes": "512x512",
       "type": "image/png",
-      "purpose": "maskable",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
