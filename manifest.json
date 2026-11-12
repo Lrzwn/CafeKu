@@ -1,7 +1,11 @@
 {
-  "name": "Find Cafe Brunei",
-  "short_name": "Cafe Finder",
-  "start_url": ".",
+  "background_color": "#ffffff",
+  "dir": "ltr",
+  "name": "CafeKu",
+  "short_name": "CafeKu",
+  "scope": "/CafeKu/",
+  "orientation": "any"
+  "start_url": "/CafeKu/",
   "display": "standalone",
   "background_color": "#FFF7ED",
   "theme_color": "#451a03",
