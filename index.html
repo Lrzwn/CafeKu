@@ -1445,7 +1445,6 @@
               ${navigator.onLine ? 'Online' : 'Offline'}
             </div>
             ${v.device_id === deviceId ? `<button class="btn-del-visit" onclick="deleteVisitedOnline('${v.id}','${v.photo_path || ''}')">Delete Online</button>` : ''}
-            </button>
           </div>
         </div>
       `).join('');
