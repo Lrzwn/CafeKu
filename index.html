@@ -1582,6 +1582,23 @@
   render();
   loadVisitedOnline();
   loadCafeInteractions();
+  setInterval(async () => {
+    let active  = document.activeElement;
+    let activeId = active && active.id ? active.value : '';
+    let actiVal = active && active.value ? active.value : '';
+    let cursor = actived && active.selectionStart ? active.selectionStart : 0;
+    let isTyping = activeId && active.tagName == 'INPUT';
+    await loadVisitedOnline();
+    await LOadCafeInteractions();
+    if (isTyping) {
+      let back = document.getElementById(activeId);
+      if (back) {
+        back.value = activeVal;
+        back.focus();
+        try { back.setselectionRange(cursor, cursor); } catch(e){}
+      }
+    }
+  }, 3000);
   setTimeout(
     () => {
       document.getElementById('splash').classList.add('hide')
