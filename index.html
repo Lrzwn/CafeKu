@@ -1288,9 +1288,11 @@
     btn.textContent = 'Uploading...';
     btn.disabled = true;
     let photo_url = '';
+    let photo_path ='';
     if(file){
       let fileName =
         Date.now() + '-' + file.name.replace(/[^a-zA-Z0-9.]/g, '');
+        photo_path = fileName;
       const { error: upErr } =
         await supabaseClient
           .storage
@@ -1316,7 +1318,8 @@
           {
             cafe: cafe,
             caption: caption,
-            photo_url: photo_url
+            photo_url: photo_url,
+            photo_path: photo_path
           }
         );
     btn.textContent = 'Save Memory (Online)';
@@ -1344,15 +1347,20 @@
     );
     render();
   }
-  async function deleteVisitedOnline(id){
-    if(!confirm('Delete memory online ni?')){
-      return;
-    }
-    await supabaseClient
-      .from('visited_memories')
-      .delete()
-      .eq('id', id);
-    await loadVisitedOnline();
+  async function deleteVisitedOnline(id, photo_path){
+  if(!confirm('Delete memory online ni? Gambar pun akan terbuang terus.')){
+    return;
+  }
+  if(photo_path){
+    await supabaseClient.storage.from('visit-photos').remove([photo_path]);
+  }
+  const { error } = await supabaseClient.from('visited_memories').delete().eq('id', id);
+  if(error){
+    alert('Gagal delete: ' + error.message);
+    return;
+  }
+  await loadVisitedOnline();
+}
   }
   function render(){
     let q =
@@ -1435,7 +1443,7 @@
             <div class="online-tag">
               ${navigator.onLine ? 'Online' : 'Offline'}
             </div>
-            <button class="btn-del-visit" onclick="deleteVisitedOnline('${v.id}')">
+            <button class="btn-del-visit" onclick="deleteVisitedOnline('${v.id}', '${v.photo_path || ''}')">
               Delete Online
             </button>
           </div>
