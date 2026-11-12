@@ -1582,23 +1582,35 @@
   render();
   loadVisitedOnline();
   loadCafeInteractions();
-  setInterval(async () => {
-    let active  = document.activeElement;
-    let activeId = active && active.id ? active.value : '';
-    let actiVal = active && active.value ? active.value : '';
-    let cursor = actived && active.selectionStart ? active.selectionStart : 0;
-    let isTyping = activeId && active.tagName == 'INPUT';
-    await loadVisitedOnline();
-    await LOadCafeInteractions();
-    if (isTyping) {
-      let back = document.getElementById(activeId);
-      if (back) {
-        back.value = activeVal;
-        back.focus();
-        try { back.setselectionRange(cursor, cursor); } catch(e){}
-      }
-    }
-  }, 3000);
+   // REALTIME - Supabase tolak sendiri
+  function saveTyping() {
+    let a = document.activeElement;
+    if (!a || a.tagName !== 'INPUT' || !a.id) return null;
+    return { id: a.id, val: a.value, cur: a.selectionStart || 0 };
+  }
+  function restoreTyping(s) {
+    if (!s) return;
+    let b = document.getElementById(s.id);
+    if (b) { b.value = s.val; b.focus(); try { b.setSelectionRange(s.cur, s.cur); } catch(e){} }
+  }
+
+  try {
+    let ch = supabase.channel('live-cafe');
+    ['cafe_likes','cafe_votes','cafe_ratings','cafe_comments','cafe_uploads','memory_likes','memory_comments'].forEach(t => {
+      ch.on('postgres_changes', { event: '*', schema: 'public', table: t }, async () => {
+        let s = saveTyping();
+        await loadCafeInteractions();
+        restoreTyping(s);
+      });
+    });
+    ch.on('postgres_changes', { event: '*', schema: 'public', table: 'visited_memories' }, async () => {
+      let s = saveTyping();
+      await loadVisitedOnline();
+      await loadCafeInteractions();
+      restoreTyping(s);
+    });
+    ch.subscribe();
+  } catch(e) { console.log('realtime off', e); }   
   setTimeout(
     () => {
       document.getElementById('splash').classList.add('hide')
