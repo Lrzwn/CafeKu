@@ -1319,7 +1319,8 @@
             cafe: cafe,
             caption: caption,
             photo_url: photo_url,
-            photo_path: photo_path
+            photo_path: photo_path,
+            device_id: deviceId,
           }
         );
     btn.textContent = 'Save Memory (Online)';
@@ -1443,8 +1444,7 @@
             <div class="online-tag">
               ${navigator.onLine ? 'Online' : 'Offline'}
             </div>
-            <button class="btn-del-visit" onclick="deleteVisitedOnline('${v.id}', '${v.photo_path || ''}')">
-              Delete Online
+            ${v.device_id === deviceId ? `<button class="btn-del-visit" onclick="deleteVisitedOnline('${v.id}','${v.photo_path || ''}')">Delete Online</button>` : ''}
             </button>
           </div>
         </div>
