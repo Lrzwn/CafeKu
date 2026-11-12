@@ -1,0 +1,1718 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>
+    ☕ Cafe Finder Brunei
+  </title>
+  <meta
+    name="theme-color"
+    content="#451a03"
+  >
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+  </script>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    body {
+      margin: 0;
+      background: #FFF7ED;
+      color: #1c1917;
+      padding-bottom: 40px;
+    }
+    .header {
+      background: #451a03;
+      color: white;
+      padding: 28px 16px 20px;
+      text-align: center;
+      border-radius: 0 0 28px 28px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      position: relative;
+    }
+    .logo {
+      width: 84px;
+      height: 84px;
+      background: white;
+      border-radius: 50%;
+      margin: 0 auto 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      box-shadow: 0 6px 20px rgba(0,0,0,.3);
+      border: 4px solid #f59e0b;
+    }
+    .header h1 {
+      margin: 4px 0;
+      font-size: 26px;
+    }
+    .header p {
+      margin: 0;
+      opacity: .85;
+      font-size: 13px;
+    }
+    .search-box {
+      padding: 14px 14px 0;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    .search-box input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid #fed7aa;
+      border-radius: 16px;
+      font-size: 16px;
+      outline: none;
+      background: white;
+    }
+    .filters {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 12px 14px;
+      max-width: 700px;
+      margin: 0 auto;
+      scrollbar-width: none;
+    }
+    .filters button {
+      white-space: nowrap;
+      padding: 9px 14px;
+      border-radius: 999px;
+      border: 1px solid #e7c9a9;
+      background: white;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .filters button.active {
+      background: #451a03;
+      color: white;
+      border-color: #451a03;
+    }
+    .count {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 0 16px;
+      color: #78716c;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .grid {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .card {
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,.07);
+      border: 1px solid #ffedd5;
+    }
+    .card-top {
+      padding: 16px 16px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .card h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      margin-top: 6px;
+      font-weight: 800;
+    }
+    .badge-muara {
+      background: #ffedd5;
+      color: #9a3412;
+    }
+    .badge-tutong {
+      background: #dcfce7;
+      color: #166534;
+    }
+    .badge-belait {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+    .badge-temburong {
+      background: #f3e8ff;
+      color: #6b21a8;
+    }
+    .badge-vibe {
+      background: #f5f5f4;
+      color: #44403c;
+      border: 1px solid #e7e5e4;
+    }
+    .card p {
+      margin: 8px 16px 0;
+      color: #57534e;
+      font-size: 13.5px;
+      line-height: 1.5;
+    }
+    .meta {
+      display: flex;
+      gap: 12px;
+      padding: 10px 16px;
+      color: #78716c;
+      font-size: 12.5px;
+      font-weight: 600;
+    }
+    .actions {
+      display: flex;
+      gap: 8px;
+      padding: 0 16px 16px;
+    }
+    .actions a,
+    .actions button {
+      flex: 1;
+      text-align: center;
+      text-decoration: none;
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 14px;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-map {
+      background: #16a34a;
+      color: white;
+    }
+    .btn-fav {
+      background: #fff7ed;
+      color: #ea580c;
+      border: 1px solid #fed7aa !important;
+    }
+    .btn-fav.loved {
+      background: #ea580c;
+      color: white;
+    }
+    .btn-visited {
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fde68a !important;
+    }
+    .btn-visited.done {
+      background: #f59e0b;
+      color: white;
+    }
+    .empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: #a8a29e;
+    }
+    .fav-note {
+      text-align: center;
+      font-size: 12px;
+      color: #a8a29e;
+      padding: 0 16px;
+    }
+    .visited-top {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      z-index: 5;
+    }
+    .visited-top button {
+      background: rgba(255,255,255,.25);
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      cursor: pointer;
+      font-weight: 800;
+    }
+    .lang-top {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 5;
+    }
+    .lang-top button {
+      background: rgba(255,255,255,.25);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,.4);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    #visited-count {
+      background: #f59e0b;
+      color: #451a03;
+      border-radius: 999px;
+      padding: 1px 6px;
+      margin-left: 2px;
+      font-size: 11px;
+    }
+    .modal-bg {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.6);
+      z-index: 9999;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .modal-bg.open {
+      display: flex;
+    }
+    .modal {
+      background: white;
+      width: 100%;
+      max-width: 500px;
+      border-radius: 24px 24px 0 0;
+      padding: 20px;
+      padding-bottom: 30px;
+      max-height: 90vh;
+      overflow: auto;
+    }
+    .modal h3 {
+      margin: 0 0 12px;
+      font-size: 18px;
+    }
+    .modal label {
+      font-size: 12px;
+      font-weight: 800;
+      color: #78716c;
+    }
+    .modal input,
+    .modal select,
+    .modal textarea {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #fed7aa;
+      border-radius: 12px;
+      margin: 6px 0 12px;
+      font-size: 14px;
+      outline: none;
+    }
+    .modal textarea {
+      height: 70px;
+      resize: none;
+    }
+    #visit-preview {
+      width: 100%;
+      border-radius: 16px;
+      display: none;
+      margin-bottom: 12px;
+      max-height: 250px;
+      object-fit: cover;
+    }
+    .btn-save-visit {
+      width: 100%;
+      padding: 14px;
+      background: #451a03;
+      color: white;
+      border: none;
+      border-radius: 14px;
+      font-weight: 800;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .btn-close-visit {
+      width: 100%;
+      padding: 10px;
+      background: #f5f5f4;
+      border: none;
+      border-radius: 12px;
+      margin-top: 8px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .visit-card {
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,.07);
+      border: 1px solid #ffedd5;
+    }
+    .visit-card img {
+      width: 100%;
+      max-height: 320px;
+      object-fit: cover;
+      display: block;
+    }
+    .visit-card .v-body {
+      padding: 14px 16px 16px;
+    }
+    .visit-card .v-cafe {
+      font-weight: 800;
+      font-size: 16px;
+    }
+    .visit-card .v-date {
+      font-size: 12px;
+      color: #a8a29e;
+    }
+    .visit-card .v-cap {
+      margin: 8px 0 0;
+      color: #44403c;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .btn-del-visit {
+      background: #fef2f2;
+      color: #dc2626;
+      border: 1px solid #fecaca !important;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      margin-top: 10px;
+      width: 100%;
+    }
+    .like-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .like-row button {
+      flex: 1;
+      padding: 11px;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .btn-like {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+    }
+    .btn-like.active {
+      background: #22c55e;
+      color: white;
+    }
+    .btn-dislike {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+    }
+    .btn-dislike.active {
+      background: #ef4444;
+      color: white;
+    }
+    .online-tag {
+      font-size: 11px;
+      color: #16a34a;
+      text-align: center;
+      margin-top: 6px;
+      font-weight: 700;
+    }
+    .comment-box {
+      background: #fff7ed;
+      border-radius: 14px;
+      padding: 12px;
+      margin-top: 14px;
+    }
+    .comment-box h4 {
+      margin: 0 0 8px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .comment-item {
+      background: white;
+      border: 1px solid #ffedd5;
+      border-radius: 10px;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+      font-size: 13px;
+    }
+    .comment-item small {
+      color: #a8a29e;
+      font-size: 11px;
+      display: block;
+    }
+    .comment-input-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .comment-input-row input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 10px;
+      border: 2px solid #fed7aa;
+      outline: none;
+      font-size: 13px;
+    }
+    .comment-input-row-button {
+      background: #451a03;
+      color: white;
+      border: none;
+      padding: 0 14px;
+      border-radius: 10px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    #splash {
+      position: fixed;
+      inset: 0;
+      background: #FFF7ED;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      gap: 6px;
+      transition: opacity .5s;
+    }
+    #splash.hide {
+      opacity: 0;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="splash">
+    <div style="font-size:64px;">
+      ☕
+    </div>
+    <div style="font-size:24px;font-weight:800;color:#451a03;">
+      Cafe Finder
+    </div>
+    <div style="font-size:13px;color:#78716c;">
+      Cafe in Brunei
+    </div>
+  </div>
+  <div class="header">
+    <div class="lang-top">
+      <button id="lang-btn" onclick="toggleLang()">
+        BM / EN
+      </button>
+    </div>
+    <div class="visited-top">
+      <button onclick="showVisited()">
+        Memories
+        <span id="visited-count">
+          0
+        </span>
+      </button>
+    </div>
+    <div class="logo">
+      <span>
+        ☕
+      </span>
+    </div>
+    <h1>
+      Cafe Finder Brunei 🇧🇳
+    </h1>
+    <p>
+      BSB • Gadong • Jerudong • Tutong • Belait • Temburong
+    </p>
+    <p id="online-status" style="font-size:11px;margin-top:6px;opacity:.9">
+      Checking internet...
+    </p>
+  </div>
+  <div class="search-box">
+    <input
+      id="search"
+      placeholder="🔍 Cari cafe..."
+      oninput="render()"
+    >
+  </div>
+  <div class="filters" id="filters">
+    <button class="active" onclick="setFilter('Semua',this)">
+      Semua
+    </button>
+    <button onclick="setFilter('Brunei-Muara',this)">
+      Brunei-Muara
+    </button>
+    <button onclick="setFilter('Tutong',this)">
+      Tutong
+    </button>
+    <button onclick="setFilter('Belait',this)">
+      Belait
+    </button>
+    <button onclick="setFilter('Temburong',this)">
+      Temburong
+    </button>
+    <button onclick="setFilter('Aesthetic',this)">
+      ✨ Aesthetic
+    </button>
+    <button onclick="setFilter('Specialty Coffee',this)">
+      ☕ Specialty
+    </button>
+    <button onclick="setFilter('Kopitiam',this)">
+      🍞 Old Kopitiam
+    </button>
+    <button onclick="setFilter('Study',this)">
+      📚 Study / Work
+    </button>
+    <button onclick="setFilter('❤️ Fav',this)">
+      ❤️ Fav
+    </button>
+  </div>
+  <div class="count" id="count">
+  </div>
+  <div class="grid" id="grid">
+  </div>
+  <p class="fav-note">
+    Tekan ❤️ untuk fav
+  </p>
+  <div class="modal-bg" id="visit-modal" onclick="if(event.target===this) closeVisitModal()">
+    <div class="modal">
+      <h3>
+        📸 Add Memory
+      </h3>
+      <label>
+        CAFE MANA?
+      </label>
+      <select id="visit-cafe">
+      </select>
+      <label>
+        COFFEE PHOTO
+      </label>
+      <input
+        type="file"
+        id="visit-photo"
+        accept="image/*"
+        onchange="previewVisitPhoto(event)"
+      >
+      <img id="visit-preview">
+      <label>
+        CAPTION
+      </label>
+      <textarea id="visit-caption" placeholder="caption...">
+      </textarea>
+      <button class="btn-save-visit" id="btn-save" onclick="saveVisited()">
+        Save
+      </button>
+      <button class="btn-close-visit" onclick="closeVisitModal()">
+        Cancel
+      </button>
+      <p style="font-size:11px;color:#a8a29e;text-align:center">
+        Upload
+      </p>
+    </div>
+  </div>
+<script>
+  // SUPABASE
+  const SUPABASE_URL =
+    "https://xxqapuhtlcdigvnmgvwx.supabase.co";
+  const SUPABASE_ANON_KEY =
+    "sb_publishable_NdXIcqqE0CGvsNDbVDNn6A_SzmOJpO0";
+  const supabaseClient =
+    supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  let deviceId =
+    localStorage.getItem('my-device') ||
+    ('dev-' + Math.random().toString(36).slice(2));
+  localStorage.setItem('my-device', deviceId);
+  function updateOnline(){
+    let el =
+      document.getElementById('online-status');
+    if(el){
+      el.textContent =
+        navigator.onLine ? 'Online' : 'Offline';
+    }
+    if(el){
+      el.style.color =
+        navigator.onLine ? '#bbf7d0' : '#fecaca';
+    }
+  }
+  window.addEventListener('online', updateOnline);
+  window.addEventListener('offline', updateOnline);
+  updateOnline();
+  let favs =
+    JSON.parse(localStorage.getItem('cafe_favs') || '[]');
+  let visited =
+    JSON.parse(localStorage.getItem('cafe_visited') || '[]');
+  if(!Array.isArray(visited)){
+    visited = [];
+  }
+  let visitedOnline = [];
+  let currentFilter = 'Semua';
+  let cafeInteractions = {};
+  const cafes = [
+    {
+      nama: "Piccolo Cafe",
+      daerah: "Brunei-Muara",
+      area: "Jalan McArthur, Waterfront BSB",
+      vibe: "Aesthetic",
+      harga: "$$",
+      best: "Lavender Latte, Onde-Onde Latte, view Kampong Ayer",
+      map: "Piccolo Cafe Jalan McArthur Bandar Seri Begawan"
+    },
+    {
+      nama: "Chop Jing Chew",
+      daerah: "Brunei-Muara",
+      area: "Spg 5, Jalan Gadong",
+      vibe: "Kopitiam",
+      harga: "$",
+      best: "Kedai kopi legend sejak 70-an, roti kawin, kopi kosong",
+      map: "Chop Jing Chew Jalan Gadong Brunei"
+    },
+    {
+      nama: "The Coffee Bean & Tea Leaf - BSB",
+      daerah: "Brunei-Muara",
+      area: "Jalan Sultan, BSB",
+      vibe: "Study",
+      harga: "$$",
+      best: "Chain besar, buka 6AM, sesuai study",
+      map: "Coffee Bean Tea Leaf Jalan Sultan Bandar Seri Begawan"
+    },
+    {
+      nama: "The Coffee Bean - Kiulap",
+      daerah: "Brunei-Muara",
+      area: "Kiulap",
+      vibe: "Study",
+      harga: "$$",
+      best: "Outlet Kiulap, ramai student",
+      map: "Coffee Bean Kiulap Brunei"
+    },
+    {
+      nama: "The Coffee Bean - Centrepoint",
+      daerah: "Brunei-Muara",
+      area: "Gadong, Centrepoint",
+      vibe: "Study",
+      harga: "$$",
+      best: "Shopping + kopi",
+      map: "Coffee Bean Centrepoint Gadong Brunei"
+    },
+    {
+      nama: "Little Audrey's Cafe",
+      daerah: "Brunei-Muara",
+      area: "Q-Lap Complex, Kiulap",
+      vibe: "Aesthetic",
+      harga: "$$",
+      best: "Brunch aesthetic, healthy food",
+      map: "Little Audrey's Cafe Q Lap Kiulap Brunei"
+    },
+    {
+      nama: "Dil's Cafe",
+      daerah: "Brunei-Muara",
+      area: "The Curve, Batu Bersurat",
+      vibe: "Specialty Coffee",
+      harga: "$$",
+      best: "Kek premium, kopi specialty, owner friendly",
+      map: "Dil's Cafe Batu Bersurat Brunei"
+    },
+    {
+      nama: "Batches Coffee",
+      daerah: "Brunei-Muara",
+      area: "Batu Satu, Jalan Raja Isteri",
+      vibe: "Specialty Coffee",
+      harga: "$$",
+      best: "Top 1 flat white Brunei, Brazilian / Ethiopian beans",
+      map: "Batches Coffee Batu Satu Brunei"
+    },
+    {
+      nama: "Roasted Sip - Jerudong",
+      daerah: "Brunei-Muara",
+      area: "Jerudong Complex, Spg 508",
+      vibe: "Specialty Coffee",
+      harga: "$$",
+      best: "Roastery sendiri, pour over",
+      map: "Roasted Sip Jerudong Brunei"
+    },
+    {
+      nama: "Roasted Sip - Airport",
+      daerah: "Brunei-Muara",
+      area: "Brunei International Airport",
+      vibe: "Specialty Coffee",
+      harga: "$$",
+      best: "Kopi sebelum fly",
+      map: "Roasted Sip Airport Brunei"
+    },
+    {
+      nama: "ZUS Coffee - Rimba Point",
+      daerah: "Brunei-Muara",
+      area: "Rimba Point, Gadong",
+      vibe: "Study",
+      harga: "$",
+      best: "Murah, WiFi laju, bawa tumbler dapat 10% off",
+      map: "ZUS Coffee Rimba Point Brunei"
+    },
+    {
+      nama: "ZUS Coffee - Times Square",
+      daerah: "Brunei-Muara",
+      area: "Times Square, Berakas",
+      vibe: "Study",
+      harga: "$",
+      best: "Lepak lepas shopping",
+      map: "ZUS Coffee Times Square Brunei"
+    },
+    {
+      nama: "HWC Coffee",
+      daerah: "Brunei-Muara",
+      area: "Kiulap / Gadong",
+      vibe: "Specialty Coffee",
+      harga: "$$",
+      best: "Strawberry Matcha, Rose Latte",
+      map: "HWC Coffee Brunei"
+    },
+    {
+      nama: "Caffe Verve",
+      daerah: "Brunei-Muara",
+      area: "Spg 68, Batu Bersurat",
+      vibe: "Aesthetic",
+      harga: "$$",
+      best: "Pizza, pasta, European vibe",
+      map: "Caffe Verve Batu Bersurat Brunei"
+    },
+    {
+      nama: "Salt:ed Cafe",
+      daerah: "Brunei-Muara",
+      area: "Batu Satu",
+      vibe: "Aesthetic",
+      harga: "$$",
+      best: "Korean cafe, croissant, soboro, matcha",
+      map: "Salted Cafe Batu Satu Brunei"
+    },
+    {
+      nama: "One Sip Cafe",
+      daerah: "Brunei-Muara",
+      area: "Kg Pelambayan, BSB",
+      vibe: "Specialty Coffee",
+      harga: "$$",
+      best: "Minimalist, view sungai Brunei",
+      map: "One Sip Cafe Pelambayan Brunei"
+    },
+    {
+      nama: "Kapra Coffee",
+      daerah: "Brunei-Muara",
+      area: "Kiulap",
+      vibe: "Specialty Coffee",
+      harga: "$$",
+      best: "Hand-brew, barista top",
+      map: "Kapra Coffee Kiulap Brunei"
+    },
+    {
+      nama: "Kitani Artisan Coffee",
+      daerah: "Brunei-Muara",
+      area: "Jerudong Complex",
+      vibe: "Specialty Coffee",
+      harga: "$$",
+      best: "Japanese vibe, pourover dalam ceramic sake",
+      map: "Kitani Artisan Coffee Jerudong Brunei"
+    },
+    {
+      nama: "The Krema Coffee",
+      daerah: "Brunei-Muara",
+      area: "Kiulap / BSB",
+      vibe: "Specialty Coffee",
+      harga: "$$",
+      best: "Dari IG delivery jadi cafe, roasting sendiri",
+      map: "The Krema Coffee Brunei"
+    },
+    {
+      nama: "Games & Lattes",
+      daerah: "Brunei-Muara",
+      area: "BSB",
+      vibe: "Study",
+      harga: "$$",
+      best: "Main board game sambil kopi",
+      map: "Games and Lattes Brunei"
+    },
+    {
+      nama: "8 Bytes Cafe",
+      daerah: "Brunei-Muara",
+      area: "BSB",
+      vibe: "Aesthetic",
+      harga: "$$",
+      best: "Vintage game, 8 Bytes Platter",
+      map: "8 Bytes Cafe Brunei"
+    },
+    {
+      nama: "Mei Kong Coffee Shop",
+      daerah: "Brunei-Muara",
+      area: "BSB, Waterfront",
+      vibe: "Kopitiam",
+      harga: "$",
+      best: "Kopitiam local, cultural experience",
+      map: "Mei Kong Coffee Shop Bandar Seri Begawan"
+    },
+    {
+      nama: "Ri's Cafe",
+      daerah: "Brunei-Muara",
+      area: "Riverside, BSB",
+      vibe: "Aesthetic",
+      harga: "$",
+      best: "Spanish Latte $3-4, rattan vibe, 2 tingkat",
+      map: "Ri's Cafe Bandar Seri Begawan"
+    },
+    {
+      nama: "The Drip BN",
+      daerah: "Brunei-Muara",
+      area: "Kg Jerudong",
+      vibe: "Study",
+      harga: "$$",
+      best: "Parking besar, tempat lepak luas, covered",
+      map: "The Drip BN Jerudong Brunei"
+    },
+    {
+      nama: "KOOHII Club",
+      daerah: "Brunei-Muara",
+      area: "BSB",
+      vibe: "Aesthetic",
+      harga: "$$",
+      best: "Matcha Strawberry, banana chocolate pie",
+      map: "KOOHII Cafe Bandar Seri Begawan"
+    },
+    {
+      nama: "Jumpa Coffee Roasters",
+      daerah: "Brunei-Muara",
+      area: "The Promenade Samakaya",
+      vibe: "Specialty Coffee",
+      harga: "$$",
+      best: "Pistachio latte, beans fresh roast",
+      map: "Jumpa Coffee Roasters Samakaya Brunei"
+    },
+    {
+      nama: "Coffee Up!",
+      daerah: "Brunei-Muara",
+      area: "UBD Botanical Centre",
+      vibe: "Aesthetic",
+      harga: "$$",
+      best: "Garden cafe, syrup homemade",
+      map: "Coffee Up UBD Brunei"
+    },
+    {
+      nama: "Kasane Cafe",
+      daerah: "Brunei-Muara",
+      area: "Spg 326, Kg Kapok, Jalan Muara",
+      vibe: "Aesthetic",
+      harga: "$$",
+      best: "Matcha latte, matcha supplier",
+      map: "Kasane Cafe Kapok Brunei"
+    },
+    {
+      nama: "Alter Ego / Beef & Beyond",
+      daerah: "Brunei-Muara",
+      area: "Setia Kenangan II, Kiulap",
+      vibe: "Aesthetic",
+      harga: "$$$",
+      best: "Dessert cantik, comfort food",
+      map: "Alter Ego Cafe Kiulap Brunei"
+    },
+    {
+      nama: "High Frequency Cafe",
+      daerah: "Brunei-Muara",
+      area: "BSB",
+      vibe: "Aesthetic",
+      harga: "$$",
+      best: "Staff friendly, vibe tenang",
+      map: "High Frequency Cafe Brunei"
+    },
+    {
+      nama: "Kopifix",
+      daerah: "Tutong",
+      area: "Tutong Town",
+      vibe: "Specialty Coffee",
+      harga: "$",
+      best: "Blue counter, fix caffeine kau",
+      map: "Kopifix Tutong Brunei"
+    },
+    {
+      nama: "I Luv Cafe Bistro",
+      daerah: "Tutong",
+      area: "Spg 45, Tutong",
+      vibe: "Aesthetic",
+      harga: "$$",
+      best: "Cafe besar di Tutong",
+      map: "I Luv Cafe Bistro Tutong Brunei"
+    },
+    {
+      nama: "Universal Cafe",
+      daerah: "Belait",
+      area: "11 Jalan Sultan Omar Ali, Seria",
+      vibe: "Kopitiam",
+      harga: "$",
+      best: "Hot-stone toasted bread, kopi old school",
+      map: "Universal Cafe Seria Brunei"
+    },
+    {
+      nama: "Thinking Cup Cafe",
+      daerah: "Belait",
+      area: "Jalan Sultan Omar Ali, Seria",
+      vibe: "Specialty Coffee",
+      harga: "$$",
+      best: "Specialty coffee di Seria town",
+      map: "Thinking Cup Cafe Seria Brunei"
+    },
+    {
+      nama: "The Slice - Jalan Pretty",
+      daerah: "Belait",
+      area: "Jalan Pretty, Kuala Belait",
+      vibe: "Aesthetic",
+      harga: "$$",
+      best: "Choc chunk cookies, S'mores brownie",
+      map: "The Slice Jalan Pretty Kuala Belait"
+    },
+    {
+      nama: "The Corner House",
+      daerah: "Belait",
+      area: "Keoja Hotel, Kuala Belait",
+      vibe: "Aesthetic",
+      harga: "$$",
+      best: "Brunch all day di Belait",
+      map: "The Corner House Keoja Hotel Kuala Belait"
+    },
+    {
+      nama: "Bla Bla Cafe",
+      daerah: "Belait",
+      area: "Complex 333, Kuala Belait",
+      vibe: "Aesthetic",
+      harga: "$$",
+      best: "Cafe di KB, lepak petang",
+      map: "Bla Bla Cafe Kuala Belait Brunei"
+    },
+    {
+      nama: "De'Royalle Cafe",
+      daerah: "Brunei-Muara",
+      area: "BSB",
+      vibe: "Study",
+      harga: "$$",
+      best: "Buka 24 jam, ada buku",
+      map: "De Royalle Cafe Brunei"
+    },
+    {
+      nama: "CheezBox Cafe",
+      daerah: "Brunei-Muara",
+      area: "Setia Point, Kg Lambak",
+      vibe: "Aesthetic",
+      harga: "$$",
+      best: "Steak, cheese, family friendly",
+      map: "CheezBox Cafe Setia Point Brunei"
+    },
+    {
+      nama: "Cafe Temburong - Bangar",
+      daerah: "Temburong",
+      area: "Pekan Bangar",
+      vibe: "Kopitiam",
+      harga: "$",
+      best: "Kopi pagi sebelum naik bot / jalan",
+      map: "Cafe Bangar Temburong Brunei"
+    },
+    {
+      nama: "New Tea Kopitiam",
+      daerah: "Temburong",
+      area: "Bangar, Temburong",
+      vibe: "Kopitiam",
+      harga: "$",
+      best: "Kopitiam Temburong",
+      map: "New Tea Kopitiam Bangar Brunei"
+    },
+    {
+      nama: "Fujiwara Cafe",
+      daerah: "Tutong",
+      area: "Sengkarai, Tutong",
+      vibe: "Aesthetic",
+      harga: "$",
+      best: "Quite and Chilling Vibes",
+      map: "Fujiwara Cafe"
+    }
+  ];
+  function setFilter(f, el){
+    currentFilter = f;
+    document
+      .querySelectorAll('#filters button')
+      .forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    render();
+  }
+  function showVisited(){
+    currentFilter = 'Visited';
+    document
+      .querySelectorAll('#filters button')
+      .forEach(b => b.classList.remove('active'));
+    render();
+    document
+      .getElementById('grid')
+      .scrollIntoView({ behavior: 'smooth' });
+  }
+  function toggleFav(nama){
+    if(favs.includes(nama)){
+      favs = favs.filter(f => f !== nama);
+    } else {
+      favs.push(nama);
+    }
+    localStorage.setItem(
+      'cafe_favs',
+      JSON.stringify(favs)
+    );
+    render();
+  }
+  function openVisitModal(nama){
+    let sel =
+      document.getElementById('visit-cafe');
+    sel.innerHTML = cafes.map(c =>
+      `<option value="${c.nama}" ${c.nama === nama ? 'selected' : ''}>${c.nama}</option>`
+    ).join('');
+    document.getElementById('visit-caption').value = '';
+    document.getElementById('visit-photo').value = '';
+    document.getElementById('visit-preview').style.display = 'none';
+    document.getElementById('visit-preview').src = '';
+    document.getElementById('visit-modal').classList.add('open');
+  }
+  function closeVisitModal(){
+    document
+      .getElementById('visit-modal')
+      .classList.remove('open');
+  }
+  function previewVisitPhoto(e){
+    let file = e.target.files[0];
+    if(!file){
+      return;
+    }
+    let r = new FileReader();
+    r.onload = function(ev){
+      let img =
+        document.getElementById('visit-preview');
+      img.src = ev.target.result;
+      img.style.display = 'block';
+    };
+    r.readAsDataURL(file);
+  }
+  async function loadVisitedOnline(){
+    if(!navigator.onLine){
+      return;
+    }
+    const { data, error } =
+      await supabaseClient
+        .from('visited_memories')
+        .select('*')
+        .order('created_at', { ascending: false });
+    if(!error && data){
+      visitedOnline = data;
+    }
+    for(let v of visitedOnline){
+      const { data: likes } =
+        await supabaseClient
+          .from('memory_likes')
+          .select('type,device_id')
+          .eq('memory_id', v.id);
+      v._likes =
+        (likes || []).filter(x => x.type === 'like').length;
+      v._dislikes =
+        (likes || []).filter(x => x.type === 'dislike').length;
+      v._my =
+        (likes || []).find(x => x.device_id === deviceId)?.type || '';
+      const { data: cmts } =
+        await supabaseClient
+          .from('memory_comments')
+          .select('*')
+          .eq('memory_id', v.id)
+          .order('created_at', { ascending: true });
+      v._comments = cmts || [];
+    }
+    if(currentFilter === 'Visited'){
+      render();
+    }
+  }
+  async function likeMemory(memoryId, type){
+    if(!navigator.onLine){
+      alert('Tiada internet!');
+      return;
+    }
+    const { error } =
+      await supabaseClient
+        .from('memory_likes')
+        .upsert(
+          {
+            memory_id: memoryId,
+            device_id: deviceId,
+            type: type
+          },
+          { onConflict: 'memory_id,device_id' }
+        );
+    if(error){
+      alert('Error: ' + error.message);
+      return;
+    }
+    await loadVisitedOnline();
+  }
+  async function addComment(memoryId, inputId){
+    let inp =
+      document.getElementById(inputId);
+    let txt = inp.value.trim();
+    if(!txt){
+      return;
+    }
+    const { error } =
+      await supabaseClient
+        .from('memory_comments')
+        .insert(
+          {
+            memory_id: memoryId,
+            device_id: deviceId,
+            text: txt
+          }
+        );
+    if(error){
+      alert('Gagal comment: ' + error.message);
+      return;
+    }
+    inp.value = '';
+    await loadVisitedOnline();
+  }
+  async function loadCafeInteractions(){
+    if(!navigator.onLine){
+      return;
+    }
+    const { data: likes } =
+      await supabaseClient
+        .from('cafe_likes')
+        .select('*');
+    const { data: cmts } =
+      await supabaseClient
+        .from('cafe_comments')
+        .select('*')
+        .order('created_at', {ascending: true});
+    cafeInteractions = {};
+    for(let c of cafes){
+      cafeInteractions[c.nama] =
+        {
+          likes: 0,
+          dislikes: 0,
+          my: '',
+          comments: []
+        };
+    }
+    for(let l of (likes||[])){
+      if(!cafeInteractions[l.cafe]){
+        cafeInteractions[l.cafe] =
+          {
+            likes: 0,
+            dislikes: 0,
+            my: '',
+            comments: []
+          };
+      }
+      if(l.type==='like'){
+        cafeInteractions[l.cafe].likes++;
+      }
+      if(l.type==='dislike'){
+        cafeInteractions[l.cafe].dislikes++;
+      }
+      if(l.device_id===deviceId){
+        cafeInteractions[l.cafe].my = l.type;
+      }
+    }
+    for(let cm of (cmts||[])){
+      if(!cafeInteractions[cm.cafe]){
+        cafeInteractions[cm.cafe] =
+          {
+            likes: 0,
+            dislikes: 0,
+            my: '',
+            comments: []
+          };
+      }
+      cafeInteractions[cm.cafe].comments.push(cm);
+    }
+    if(currentFilter !== 'Visited'){
+      render();
+    }
+  }
+  async function likeCafe(cafeName, type){
+    if(!navigator.onLine){
+      alert('Tiada internet!');
+      return;
+    }
+    const { error } =
+      await supabaseClient
+        .from('cafe_likes')
+        .upsert(
+          {
+            cafe: cafeName,
+            device_id: deviceId,
+            type: type
+          },
+          { onConflict: 'cafe,device_id' }
+        );
+    if(error){
+      alert(error.message);
+      return;
+    }
+    await loadCafeInteractions();
+  }
+  async function addCafeComment(cafeName, inputId){
+    let inp =
+      document.getElementById(inputId);
+    let txt = inp.value.trim();
+    if(!txt){
+      return;
+    }
+    const { error } =
+      await supabaseClient
+        .from('cafe_comments')
+        .insert(
+          {
+            cafe: cafeName,
+            device_id: deviceId,
+            text: txt
+          }
+        );
+    if(error){
+      alert(error.message);
+      return;
+    }
+    inp.value = '';
+    await loadCafeInteractions();
+  }
+  async function saveVisited(){
+    let cafe =
+      document.getElementById('visit-cafe').value;
+    let caption =
+      document.getElementById('visit-caption').value.trim();
+    let file =
+      document.getElementById('visit-photo').files[0];
+    if(!cafe){
+      alert('Pilih cafe dulu!');
+      return;
+    }
+    if(!navigator.onLine){
+      alert('Tidak ada Internet!');
+      return;
+    }
+    let btn =
+      document.getElementById('btn-save');
+    btn.textContent = 'Uploading...';
+    btn.disabled = true;
+    let photo_url = '';
+    if(file){
+      let fileName =
+        Date.now() + '-' + file.name.replace(/[^a-zA-Z0-9.]/g, '');
+      const { error: upErr } =
+        await supabaseClient
+          .storage
+          .from('visit-photos')
+          .upload(fileName, file);
+      if(upErr){
+        alert('Upload gagal: ' + upErr.message);
+        btn.textContent = 'Save Memory (Online)';
+        btn.disabled = false;
+        return;
+      }
+      const { data: pub } =
+        supabaseClient
+          .storage
+          .from('visit-photos')
+          .getPublicUrl(fileName);
+      photo_url = pub.publicUrl;
+    }
+    const { error } =
+      await supabaseClient
+        .from('visited_memories')
+        .insert(
+          {
+            cafe: cafe,
+            caption: caption,
+            photo_url: photo_url
+          }
+        );
+    btn.textContent = 'Save Memory (Online)';
+    btn.disabled = false;
+    if(error){
+      alert('Gagal save: ' + error.message);
+      return;
+    }
+    closeVisitModal();
+    currentFilter = 'Visited';
+    await loadVisitedOnline();
+    render();
+    document
+      .getElementById('grid')
+      .scrollIntoView({ behavior: 'smooth' });
+  }
+  function deleteVisited(i){
+    if(!confirm('Delete memory ni?')){
+      return;
+    }
+    visited.splice(i, 1);
+    localStorage.setItem(
+      'cafe_visited',
+      JSON.stringify(visited)
+    );
+    render();
+  }
+  async function deleteVisitedOnline(id){
+    if(!confirm('Delete memory online ni?')){
+      return;
+    }
+    await supabaseClient
+      .from('visited_memories')
+      .delete()
+      .eq('id', id);
+    await loadVisitedOnline();
+  }
+  function render(){
+    let q =
+      document.getElementById('search').value.toLowerCase();
+    let list = cafes.filter(c => {
+      let matchQ =
+        c.nama.toLowerCase().includes(q) ||
+        c.area.toLowerCase().includes(q) ||
+        c.best.toLowerCase().includes(q);
+      if(!matchQ){
+        return false;
+      }
+      if(currentFilter === 'Semua'){
+        return true;
+      }
+      if(currentFilter === '❤️ Fav'){
+        return favs.includes(c.nama);
+      }
+      if(
+        ['Brunei-Muara','Tutong','Belait','Temburong']
+        .includes(currentFilter)
+      ){
+        return c.daerah === currentFilter;
+      }
+      return c.vibe === currentFilter;
+    });
+    let vc =
+      document.getElementById('visited-count');
+    if(vc){
+      vc.textContent =
+        visitedOnline.length + visited.length;
+    }
+    let grid =
+      document.getElementById('grid');
+    if(currentFilter === 'Visited'){
+      document.getElementById('count').textContent =
+        (visitedOnline.length + visited.length) +
+        ' Memories • Expressing the feelings of your coffee journey';
+      if(
+        visitedOnline.length === 0 &&
+        visited.length === 0
+      ){
+        grid.innerHTML =
+          '<div class="empty">📸 Belum ada memory.<br> 📸 Upload satu! </div>';
+        return;
+      }
+      let html = visitedOnline.map(v => `
+        <div class="visit-card">
+          ${v.photo_url ? `<img src="${v.photo_url}">` : ''}
+          <div class="v-body">
+            <div class="v-cafe">
+              ☕ ${v.cafe}
+            </div>
+            <div class="v-date">
+              📅 ${new Date(v.created_at).toISOString().slice(0,10)} • ONLINE
+            </div>
+            <div class="v-cap">
+              ${v.caption ? v.caption.replace(/</g,'&lt;') : '<i>Tiada caption</i>'}
+            </div>
+            <div class="like-row">
+              <button class="btn-like ${v._my === 'like' ? 'active' : ''}" onclick="likeMemory('${v.id}','like')">
+                👍 Like ${v._likes || 0}
+              </button>
+              <button class="btn-dislike ${v._my === 'dislike' ? 'active' : ''}" onclick="likeMemory('${v.id}','dislike')">
+                👎 Dislike ${v._dislikes || 0}
+              </button>
+            </div>
+            <div class="comment-box">
+              <h4>
+                💬 Comments (${(v._comments||[]).length})
+              </h4>
+              ${(v._comments||[]).length===0 ? '<div style="font-size:12px;color:#a8a29e">Belum ada comment.</div>' : (v._comments||[]).map(c=>`<div class="comment-item">${c.text.replace(/</g,'&lt;')}<small>${new Date(c.created_at).toISOString().slice(0,10)}</small></div>`).join('')}
+              <div class="comment-input-row">
+                <input id="cmt-${v.id}" placeholder="Tulis comment..." onkeydown="if(event.key==='Enter') addComment('${v.id}','cmt-${v.id}')">
+                <button class="comment-input-row-button" onclick="addComment('${v.id}','cmt-${v.id}')">
+                  Send
+                </button>
+              </div>
+            </div>
+            <div class="online-tag">
+              ${navigator.onLine ? 'Online' : 'Offline'}
+            </div>
+            <button class="btn-del-visit" onclick="deleteVisitedOnline('${v.id}')">
+              Delete Online
+            </button>
+          </div>
+        </div>
+      `).join('');
+      html += visited.map((v,i) => `
+        <div class="visit-card">
+          ${v.photo ? `<img src="${v.photo}">` : ''}
+          <div class="v-body">
+            <div class="v-cafe">
+              ☕ ${v.cafe}
+            </div>
+            <div class="v-date">
+              📅 ${v.date} • OFFLINE (lama)
+            </div>
+            <div class="v-cap">
+              ${v.caption ? v.caption.replace(/</g,'&lt;') : '<i>Tiada caption</i>'}
+            </div>
+            <div style="text-align:center;font-size:12px;color:#a8a29e;margin-top:10px">
+            </div>
+            <button class="btn-del-visit" onclick="deleteVisited(${i})">
+              Delete
+            </button>
+          </div>
+        </div>
+      `).join('');
+      grid.innerHTML = html;
+      return;
+    }
+    document.getElementById('count').textContent =
+      list.length + ' cafe jumpa • ' + favs.length + ' fav disimpan';
+    if(list.length === 0){
+      grid.innerHTML =
+        '<div class="empty">☕ Tidak jumpa.</div>';
+      return;
+    }
+    grid.innerHTML = list.map(c => {
+      let badgeClass =
+        c.daerah === 'Brunei-Muara' ? 'badge-muara' :
+        c.daerah === 'Tutong' ? 'badge-tutong' :
+        c.daerah === 'Belait' ? 'badge-belait' :
+        'badge-temburong';
+      let isFav =
+        favs.includes(c.nama);
+      let isVisited =
+        visitedOnline.some(v => v.cafe === c.nama) ||
+        visited.some(v => v.cafe === c.nama);
+      let mapsUrl =
+        'https://www.google.com/maps/search/?api=1&query=' +
+        encodeURIComponent(c.map);
+      let ci =
+        cafeInteractions[c.nama] ||
+        {
+          likes: 0,
+          dislikes: 0,
+          my: '',
+          comments: []
+        };
+      let safeName =
+        c.nama.replace(/'/g,"\\'");
+      let commentId =
+        'cafe-cmt-' + c.nama.replace(/[^a-zA-Z0-9]/g,'-');
+      return `
+        <div class="card">
+          <div class="card-top">
+            <h3>
+              ☕ ${c.nama}
+            </h3>
+            <span style="font-size:18px">
+              ${isFav ? '❤️' : '🤍'}
+            </span>
+          </div>
+          <div style="padding:0 16px">
+            <span class="badge ${badgeClass}">
+              ${c.daerah}
+            </span>
+            <span class="badge badge-vibe">
+              ${c.vibe} • ${c.harga}
+            </span>
+            ${isVisited ? '<span class="badge" style="background:#fef3c7;color:#92400e"></span>' : ''}
+          </div>
+          <p>
+            <b>
+              📍 ${c.area}
+            </b>
+            <br>
+            ⭐ Best: ${c.best}
+          </p>
+          <div class="meta">
+            <span>
+              💰 ${c.harga}
+            </span>
+            <span>
+              📍 ${c.daerah}
+            </span>
+            <span>
+              ${c.vibe}
+            </span>
+          </div>
+          <div class="actions">
+            <a class="btn-map" href="${mapsUrl}" target="_blank">
+              📍 Location / Maps
+            </a>
+            <button class="btn-fav ${isFav ? 'loved' : ''}" onclick="toggleFav('${safeName}')">
+              ${isFav ? '❤️ Fav' : '🤍 Fav'}
+            </button>
+          </div>
+          <div class="actions" style="padding-top:0">
+            <button class="btn-visited ${isVisited ? 'done' : ''}" onclick="openVisitModal('${safeName}')">
+              ${isVisited ? 'Add Lagi' : 'Visit'}
+            </button>
+          </div>
+          <div style="padding:0 16px 16px">
+            <div class="like-row" style="margin-top:0">
+              <button class="btn-like ${ci.my==='like'?'active':''}" onclick="likeCafe('${safeName}','like')">
+                👍 Like ${ci.likes}
+              </button>
+              <button class="btn-dislike ${ci.my==='dislike'?'active':''}" onclick="likeCafe('${safeName}','dislike')">
+                👎 Dislike ${ci.dislikes}
+              </button>
+            </div>
+            <div class="comment-box">
+              <h4>
+                💬 Comments Cafe (${ci.comments.length})
+              </h4>
+              ${ci.comments.length===0 ? '<div style="font-size:12px;color:#a8a29e">Belum ada comment.</div>' : ci.comments.map(cm=>`<div class="comment-item">${(cm.text||'').replace(/</g,'&lt;')}<small>${cm.created_at ? new Date(cm.created_at).toISOString().slice(0,10) : ''}</small></div>`).join('')}
+              <div class="comment-input-row">
+                <input id="${commentId}" placeholder="Tulis comment cafe ni..." onkeydown="if(event.key==='Enter') addCafeComment('${safeName}','${commentId}')">
+                <button class="comment-input-row-button" onclick="addCafeComment('${safeName}','${commentId}')">
+                  Send
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+  render();
+  loadVisitedOnline();
+  loadCafeInteractions();
+  setTimeout(
+    () => {
+      document.getElementById('splash').classList.add('hide')
+    },
+    1500
+  );
+  setTimeout(
+    () => {
+      document.getElementById('splash').remove()
+    },
+    2100
+  );
+  let currentLang =
+    localStorage.getItem('cafe_lang') || 'ms';
+  const T = {
+    ms: {
+      'Cari cafe...': 'Cari cafe...',
+      'Semua': 'Semua',
+      'Aesthetic': 'Aesthetic',
+      'Specialty': 'Specialty',
+      'Kopitiam Lama': 'Kopitiam Lama',
+      'Study / Work': 'Study / Work',
+      'Fav': 'Fav',
+      'Visit': 'Visit',
+      'Add Lagi': 'Add Lagi',
+      'Visited': 'Visited',
+      'Send': 'Send',
+      'Tulis comment...': 'Tulis comment...',
+      'Comments': 'Comments',
+      'Belum ada comment.': 'Belum ada comment.',
+      'Memories': 'Memories',
+      'Save': 'Save',
+      'Cancel': 'Cancel',
+      'Delete': 'Delete',
+      'Delete Online': 'Delete',
+      'Add Memory': 'Add Memory',
+      'cafe jumpa': 'cafe jumpa',
+      'fav disimpan': 'fav disimpan',
+      'Memories • Expressing': 'Memories • Expressing'
+    },
+    en: {
+      'Cari cafe...': 'Search cafes...',
+      'Semua': 'All',
+      'Aesthetic': 'Aesthetic',
+      'Specialty': 'Specialty',
+      'Kopitiam Lama': 'Old Kopitiam',
+      'Study / Work': 'Study / Work',
+      'Fav': 'Fav',
+      'Visit': 'Visit',
+      'Add Lagi': 'Add More',
+      'Visited': 'Visited',
+      'Send': 'Send',
+      'Tulis comment...': 'Write a comment...',
+      'Comments': 'Comments',
+      'Belum ada comment.': 'No comments yet.',
+      'Memories': 'Memories',
+      'Save': 'Save',
+      'Cancel': 'Cancel',
+      'Delete': 'Delete',
+      'Delete Online': 'Delete Online',
+      'Add Memory': 'Add Memory',
+      'cafe jumpa': 'cafes found',
+      'fav disimpan': 'favs saved',
+      'Memories • Expressing': 'Memories • Expressing'
+    }
+  };
+  function applyLang(){
+    let btn =
+      document.getElementById('lang-btn');
+    if(btn){
+      btn.textContent =
+        currentLang==='ms' ? 'BM / EN' : 'EN / BM';
+    }
+    document
+      .querySelectorAll('[placeholder]')
+      .forEach(el=>{
+        if(!el.dataset.msPh){
+          el.dataset.msPh = el.placeholder;
+        }
+        let msPh = el.dataset.msPh;
+        for(let k in T.ms){
+          if(msPh.includes(k)){
+            el.placeholder =
+              msPh.replace(k, T[currentLang][k]);
+            break;
+          }
+        }
+      });
+    let map = T[currentLang];
+    let rev = T[currentLang==='ms'?'en':'ms'];
+    document
+      .querySelectorAll('button, h4, span, div, small, p, h1, h2, h3, label')
+      .forEach(el=>{
+        if(el.children.length>0){
+          return;
+        }
+        let t = el.textContent.trim();
+        for(let k in rev){
+          if(
+            t===k ||
+            t.startsWith(k+' ') ||
+            t.startsWith(k+' (')
+          ){
+            el.textContent =
+              map[k]+t.slice(k.length);
+            break;
+          }
+        }
+      });
+    localStorage.setItem('cafe_lang', currentLang);
+  }
+  function toggleLang(){
+    currentLang =
+      currentLang==='ms' ? 'en' : 'ms';
+    applyLang();
+    if(typeof render==='function'){
+      render();
+    }
+    setTimeout(applyLang, 100);
+  }
+  setTimeout(applyLang, 300);
+</script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  const firebaseConfig = {
+    apiKey: "AIzaSyDBmbp_ORcGPrwLjcjbK67_3sIhhEev98E",
+    authDomain: "cafe-finder-brunei.firebaseapp.com",
+    projectId: "cafe-finder-brunei",
+    storageBucket: "cafe-finder-brunei.firebasestorage.app",
+    messagingSenderId: "930754193572",
+    appId: "1:930754193572:web:2cbf0d0227fcefc6b5de31"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  console.log("Firebase sudah bersambung!", app);
+</script>
+</body>
+</html>
